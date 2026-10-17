@@ -75,7 +75,7 @@ res.status(200).json({
 // get singla product
 const getSingleProducts = async (req, res) => {
         const { id } = req.params
-        const product = await Product.findById(id).populate(['owner', 'category', 'subCategory'])
+        const product = await Product.findById(id).populate([{path: 'owner', select:'-password'},{ path: 'category'}, { path: 'subCategory'}])
         if (!product){
             return res.status(404).json({
               success: false,
@@ -86,7 +86,7 @@ const getSingleProducts = async (req, res) => {
           message:'Product found successfully..',
           data: product
        })
-    }
+}
 // get categories wise product
 const getProductsByCategory = async (req, res) => {
     const { categoryId } = req.params;
