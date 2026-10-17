@@ -1,0 +1,23 @@
+{
+  "name": "ecommerceprojectrelation",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "Md Hanif",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "mongodb": "^7.7.0",
+    "mongoose": "^9.10.2",
+    "multer": "^2.4.0",
+    "nodemon": "^1.14.10"
+  }
+}
