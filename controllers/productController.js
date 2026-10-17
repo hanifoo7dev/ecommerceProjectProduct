@@ -72,6 +72,21 @@ res.status(200).json({
 })
 }
 
+// get singla product
+const getSingleProducts = async (req, res) => {
+        const { id } = req.params
+        const product = await Product.findById(id).populate(['owner', 'category', 'subCategory'])
+        if (!product){
+            return res.status(404).json({
+              success: false,
+              message: 'Product was not found !' })
+        }
+        return res.status(200).json({
+          success: true,
+          message:'Product found successfully..',
+          data: product
+       })
+    }
 // get categories wise product
 const getProductsByCategory = async (req, res) => {
     const { categoryId } = req.params;
@@ -140,4 +155,4 @@ const deleteProduct = async (req, res) => {
 
 
 
-module.exports={createPorduct,getAllProduct,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct}
+module.exports={createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct}
