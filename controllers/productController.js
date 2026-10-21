@@ -1,5 +1,55 @@
 const mongoose = require('mongoose')
 const Product = require('../models/productSchema')
+const { readSheet }= require('read-excel-file/node')
+const XLSX = require("xlsx");
+
+
+const schema = {
+  title: {
+    column: 'title',
+    type: String
+  },
+  description: {
+    column: 'description',
+    type: String
+  },
+  shortDescription: {
+    column: 'shortDescription',
+    type: String
+  },
+  price: {
+    column: 'price',
+    type: Number
+  },
+  discountPrice: {
+    column: 'discountPrice',
+    type: Number
+  },
+  stock: {
+    column: 'stock',
+    type: Number
+  },
+  status: {
+    column: 'status',
+    type: String
+  },
+  imageUrl: {
+    column: 'imageUrl',
+    type: String
+  },
+  isMain: {
+    column: 'isMain',
+    type: Boolean
+  },
+  sku:{
+    column: 'sku',
+    type: String
+  },
+   slug:{
+    column: 'slug',
+    type: String
+  }
+}
 
 // create product with images
 let createPorduct = async(req,res)=>{
@@ -13,7 +63,7 @@ let createPorduct = async(req,res)=>{
 // 2. Check uploaded files
     const files = Array.isArray(req.files) ? req.files : [];
   // to see image  
-  console.log(req.files);
+  // console.log(req.files);
 
   let images = []
   req.files.map((item,index)=>{
@@ -107,21 +157,8 @@ const getProductsByOwner = async (req, res) => {
       products
     });
   } 
-
-// get  subcategory wise All product
-const getProductsBySubCategory = async (req, res) => {
-    const { subCategoryId } = req.params;
-
-    const products = await Product.find({subCategory: subCategoryId}).populate('category subCategory owner', '-password');
-
-    return res.status(200).json({
-      success: true,
-      message: 'Products fetched by subCategory',
-      products
-    });
-  }
-// Delete one product by ID
-const deleteProduct = async (req, res) => {
+  // Delete one product by ID
+  const deleteProduct = async (req, res) => {
 
     const { productId } = req.params;
 
@@ -148,11 +185,110 @@ const deleteProduct = async (req, res) => {
       product
     });
 };
+// get  subcategory wise All product
+const getProductsBySubCategory = async (req, res) => {
+    const { subCategoryId } = req.params;
+
+    const products = await Product.find({subCategory: subCategoryId}).populate('category subCategory owner', '-password');
+
+    return res.status(200).json({
+      success: true,
+      message: 'Products fetched by subCategory',
+      products
+    });
+  }
+
+// upload data from excel
+const bulkProducrUpload = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded",
+      });
+    }
+
+    const result = await readSheet(req.file.path, { schema });
+    const objects = result.objects || result.rows || result.data || result;
+
+    if (!objects || !Array.isArray(objects) || objects.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid data found in the sheet",
+      });
+    }
+
+    const products = objects.map((product) => ({
+      ...product,
+      slug: product.slug ? product.slug :product.title.toLowerCase().split(" ").join("-"),
+      sku:product.sku ? product.sku : `eco-${product.title.substring(0,4)}-${Date.now()}`,
+      images: [                          // ← এখানে imageUrl না লিখে images লিখুন
+        {
+          url: product.imageUrl,         // এক্সেলের কলাম থেকে নিচ্ছে
+          isMain: true,
+        },
+      ],
+    }));
+
+    // এক্সেল থেকে আসা imageUrl ফিল্ডটা বাদ দিতে চাইলে:
+    // delete product.imageUrl;  (map এর ভিতরে করতে পারেন)
+
+    const saved = await Product.insertMany(products);
+
+    res.status(201).json({
+      success: true,
+      message: "All products uploaded successfully",
+      count: saved.length,
+    });
+  } catch (error) {
+    console.log("Bulk upload error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+//Get data from Database in excel fomat
+const exportProductsExcel = async (req, res) => {
+  try {
+    const products = await Product.find({}).lean();
+
+    if (!products || products.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No products found",
+      });
+    }
+
+    const data = products.map((p) => ({
+      title: p.title || "",
+      description: p.description || "",
+      shortDescription: p.shortDescription || "",
+      price: p.price || 0,
+      discountPrice: p.discountPrice || 0,
+      stock: p.stock || 0,
+      status: p.status || "",
+      imageUrl: p.images?.[0]?.url || "",
+      isMain: p.images?.[0]?.isMain || false,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
+
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    res.setHeader("Content-Disposition","attachment; filename=all-products.xlsx");
+    res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.send(buffer);
+   } catch (error) {
+    console.log("Export error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 
-
-
-
-
-
-module.exports={createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct}
+module.exports={createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct,bulkProducrUpload,exportProductsExcel}

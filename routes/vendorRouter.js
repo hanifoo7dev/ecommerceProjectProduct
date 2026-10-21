@@ -1,7 +1,7 @@
 const express = require('express')
 const _ = express.Router()
 const { createCategory, getAllCategory, createSubCategory, getAllSubCategory, getAllCategoryWiseSubCategory, getAllOwnerWiseCategory } = require('../controllers/vendorController')
-const {createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct}= require('../controllers/productController')
+const {createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct,bulkProducrUpload,exportProductsExcel}= require('../controllers/productController')
 const multer = require('multer')
 
 // image uploaded
@@ -31,6 +31,8 @@ _.get('/all/category/:id/subcategory', getAllCategoryWiseSubCategory)
 
 // Product
 _.post('/create/product',upload.array('photo'),createPorduct)
+_.post('/bulk/products',upload.single('file'),bulkProducrUpload)
+_.get('/bulk/upload/products',exportProductsExcel)
 _.get('/all/product',getAllProduct)
 _.get('/product/:id',getSingleProducts)
 _.get('/owner/:ownerId',getProductsByOwner)
