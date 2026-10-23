@@ -17,13 +17,13 @@ const productSchema = new Schema({
   },
   sku: {
     type: String,
-    //required: true,
-   // unique: true
+    required: true,
+   unique: true
   },
   slug:{
     type: String,
-   // required: true,
-    //unique: true
+   required: true,
+    unique: true
   }, 
   price:{
     type: Number
@@ -65,7 +65,7 @@ const productSchema = new Schema({
  owner:{
     type: Schema.Types.ObjectId,
     ref: 'User', 
-    // required: true
+    required: true
 }
 
 

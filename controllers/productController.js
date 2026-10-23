@@ -222,16 +222,13 @@ const bulkProducrUpload = async (req, res) => {
       ...product,
       slug: product.slug ? product.slug :product.title.toLowerCase().split(" ").join("-"),
       sku:product.sku ? product.sku : `eco-${product.title.substring(0,4)}-${Date.now()}`,
-      images: [                          // ← এখানে imageUrl না লিখে images লিখুন
+      images: [                       
         {
-          url: product.imageUrl,         // এক্সেলের কলাম থেকে নিচ্ছে
+          url: product.imageUrl,        
           isMain: true,
         },
       ],
     }));
-
-    // এক্সেল থেকে আসা imageUrl ফিল্ডটা বাদ দিতে চাইলে:
-    // delete product.imageUrl;  (map এর ভিতরে করতে পারেন)
 
     const saved = await Product.insertMany(products);
 
