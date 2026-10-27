@@ -55,12 +55,12 @@ const productSchema = new Schema({
     type:
         Schema.Types.ObjectId,
         ref: 'Category',
-        require: true
+       require: true
  },
   subCategory:{
     type:Schema.Types.ObjectId,
         ref: 'SubCategory',
-        require: true
+         require: true
        },
  owner:{
     type: Schema.Types.ObjectId,

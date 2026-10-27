@@ -53,8 +53,9 @@ const schema = {
 
 // create product with images
 let createPorduct = async(req,res)=>{
-  let{title, description,shortDescription,price,discountPrice,isMain,category,subCategory,owner}= req.body
-  if (!title?.trim() ||!description?.trim() ||!shortDescription?.trim() || price === undefined || price === '' || discountPrice === undefined || discountPrice === '' || !category || !subCategory || !owner){
+   let{title, description,shortDescription,price,discountPrice,isMain,category,subCategory,owner}= req.body
+  
+  if (!title?.trim() ||!description?.trim() ||!shortDescription?.trim() || price === undefined || price === '' || discountPrice === undefined || discountPrice === '' || !isMain?.trim()){
        return res.status(400).json({
         success: false,
         message: 'Please fill all required fields'
@@ -287,5 +288,39 @@ const exportProductsExcel = async (req, res) => {
   }
 };
 
+// update product with image and ismain  //sku and slug is not allow to update
+let updateProduct = async(req,res)=>{
+  let {id} = req.params
+  let existingProduct = await Product.findOne({_id: id})
+  console.log(existingProduct)
+  //update only isMain
+  console.log(req.body.isMain,existingProduct)
+  
+    if(req.body.isMain){
+      existingProduct.images.map((item,index)=>{
+      item.isMain = false
+    })
+  existingProduct.images[req.body.isMain].isMain = true
+  // delete one 
+}
+if(req.body.deleteImage){
+   // first ismain is true or not and after delete first ismain will be true
+  if(existingProduct.images[req.body.deleteImage].isMain == true){
+     existingProduct.images[0].isMain = true
+     existingProduct.images.splice(req.body.deleteImage,1)
+  } 
+}
 
-module.exports={createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct,bulkProducrUpload,exportProductsExcel}
+  existingProduct.save()
+
+  let data = await Product.findByIdAndUpdate({_id: id}, req.body,{new: true})
+  // delete one by index 
+  res.status(200).json({
+    success: true,
+    message: "Update done"
+  })
+}
+
+
+
+module.exports={createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct,bulkProducrUpload,exportProductsExcel,updateProduct}

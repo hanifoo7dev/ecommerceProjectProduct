@@ -1,7 +1,7 @@
 const express = require('express')
 const _ = express.Router()
 const { createCategory, getAllCategory, createSubCategory, getAllSubCategory, getAllCategoryWiseSubCategory, getAllOwnerWiseCategory } = require('../controllers/vendorController')
-const {createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct,bulkProducrUpload,exportProductsExcel}= require('../controllers/productController')
+const {createPorduct,getAllProduct,getSingleProducts,getProductsByOwner,getProductsByCategory,getProductsBySubCategory,deleteProduct,bulkProducrUpload,exportProductsExcel,updateProduct}= require('../controllers/productController')
 const multer = require('multer')
 
 // image uploaded
@@ -32,6 +32,7 @@ _.get('/all/category/:id/subcategory', getAllCategoryWiseSubCategory)
 // Product
 _.post('/create/product',upload.array('photo'),createPorduct)
 _.post('/bulk/products',upload.single('file'),bulkProducrUpload)
+_.post('/singal/product/upload/:id',upload.single('photo'),updateProduct)
 _.get('/bulk/upload/products',exportProductsExcel)
 _.get('/all/product',getAllProduct)
 _.get('/product/:id',getSingleProducts)
@@ -39,6 +40,7 @@ _.get('/owner/:ownerId',getProductsByOwner)
 _.get('/category/:categoryId',getProductsByCategory)
 _.get('/subcategory/:subcategoryId/',getProductsBySubCategory)
 _.delete('/:productId',deleteProduct)
+
 
 
 module.exports = _
